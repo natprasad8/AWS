@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+# S3 put-object is used to upload a single object to an S3 bucket.
+
+# Exit immediately if a command returns a non-zero RC.
+set -e
+
+if [ "$#" -ne 2 ]; then
+    echo "Usage: $0 <bucket-name> <filename>"
+    exit 1
+fi
+
+BUCKET_NAME=$1
+FILENAME=$2
+OBJECT_KEY=$(basename $FILENAME)
+
+echo -e "\n***** Putting object to S3 Bucket: $BUCKET_NAME *****\n"
+
+aws s3api put-object --bucket $BUCKET_NAME --key $OBJECT_KEY --body $FILENAME
+
+if [ $? -ne 0 ]; then
+    echo -e "\nError: Failed to upload object $OBJECT_KEY to bucket $BUCKET_NAME"
+    exit 1
+else
+    echo -e "\n$OBJECT_KEY uploaded to $BUCKET_NAME successfully."
+fi

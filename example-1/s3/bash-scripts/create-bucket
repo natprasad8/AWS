@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+if [ "$#" -ne 1 ]; then
+    echo "Usage: $0 <bucket-name>"
+    exit 1
+fi
+
+BUCKET_NAME=$1
+
+echo -e "\n***** Creating S3 Bucket: $BUCKET_NAME *****\n"
+
+aws s3api create-bucket \
+--bucket "$BUCKET_NAME" \
+--create-bucket-configuration="LocationConstraint=ca-central-1" \
+--query Location \
+--output text
+
+if [ $? -ne 0 ]; then
+    echo -e "\nError: Failed to create bucket $BUCKET_NAME"
+    exit 1
+else
+    echo -e "\nBucket $BUCKET_NAME created successfully."
+fi

@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+# S3 Sync is used to sync multiple files to an S3 bucket.
+
+# Exit immediately if a command returns a non-zero RC.
+set -e
+
+if [ "$#" -ne 2 ]; then
+    echo "Usage: $0 <bucket-name> <filename-prefix>"
+    exit 1
+fi
+
+BUCKET_NAME=$1
+FILENAME_PREFIX=$2
+
+OUTPUT_DIR="/tmp/s3-bash-files"
+
+# If OUTPUT_DIR exists, remove this old dir.
+if [ -d "$OUTPUT_DIR" ]; then
+    rm -rf "$OUTPUT_DIR"
+fi
+
+# Create OUTPUT_DIR.
+mkdir -p "$OUTPUT_DIR"
+
+# Generate a random number of files with
+# random gibberish to use for testing.
+NUM_FILES=$((RANDOM % 10 + 1))
+
+for ((i=1; i<=NUM_FILES; i++)); do
+    FILENAME="$OUTPUT_DIR/${FILENAME_PREFIX}_$i.txt"
+    dd if=/dev/urandom of="$FILENAME" bs=1024 count=$((RANDOM % 1024 + 1)) &> /dev/null
+done
+
+tree $OUTPUT_DIR
+
+echo -e "\n***** Syncing Objects to S3 Bucket: $BUCKET_NAME *****\n"
+
+aws s3 sync "$OUTPUT_DIR/" "s3://$BUCKET_NAME/files"
+
+if [ $? -ne 0 ]; then
+    echo -e "\nError: Failed to sync objects to bucket $BUCKET_NAME"
+    exit 1
+else
+    echo -e "\nFiles synced to $BUCKET_NAME successfully."
+fi

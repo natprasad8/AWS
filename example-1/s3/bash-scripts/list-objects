@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+if [ "$#" -ne 1 ]; then
+    echo "Usage: $0 <bucket-name>"
+    exit 1
+fi
+
+BUCKET_NAME=$1
+
+echo -e "\n***** Listing Objects in S3 Bucket: $BUCKET_NAME *****\n"
+
+aws s3api list-objects-v2 --bucket "$BUCKET_NAME" | jq -r '.Contents | .[] | .Key'
+
+if [ $? -ne 0 ]; then
+    echo -e "\nError: Failed to list objects in bucket $BUCKET_NAME"
+    exit 1
+fi

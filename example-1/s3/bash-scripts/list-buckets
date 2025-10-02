@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+echo -e "\n***** Listing all S3 Buckets *****\n"
+
+#aws s3 ls
+aws s3api list-buckets | jq -r '.Buckets | sort_by(.CreationDate) | reverse | .[] | .Name'
+
+if [ $? -ne 0 ]; then
+    echo -e "\nError: Failed to list S3 buckets"
+    exit 1
+fi

@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+# Delete multiple objects from an S3 bucket.
+
+# Exit immediately if a command returns a non-zero RC.
+set -e
+
+if [ "$#" -ne 1 ]; then
+    echo "Usage: $0 <bucket-name>"
+    exit 1
+fi
+
+BUCKET_NAME=$1
+
+echo -e "\n***** Deleting following objects from S3 Bucket: $BUCKET_NAME *****\n"
+
+object_list=$(aws s3api list-objects-v2 --bucket "$BUCKET_NAME" | jq -r '.Contents | .[] | .Key')
+echo "$object_list"
+
+echo "$object_list" | xargs -I {} aws s3api delete-object --bucket $BUCKET_NAME --key {}
+
+if [ $? -ne 0 ]; then
+    echo -e "\nError: Failed to delete objects from bucket $BUCKET_NAME"
+    exit 1
+else
+    echo -e "\nObjects deleted from $BUCKET_NAME successfully."
+fi
